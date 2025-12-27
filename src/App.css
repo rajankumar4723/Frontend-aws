@@ -1,38 +1,45 @@
-.App {
-  text-align: center;
+.App-header { padding: 20px; text-align: center; background-color: #282c34; color: white; min-height: 100vh; }
+.upload-section { margin-bottom: 30px; padding: 20px; border: 1px dashed #61dafb; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 20px; }
+.file-card { background: white; color: black; padding: 10px; border-radius: 8px; }
+.file-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 4px; }
+button { padding: 10px 20px; cursor: pointer; background: #61dafb; border: none; font-weight: bold; }
+.button-group button {
+  transition: transform 0.1s ease;
+  cursor: pointer;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.button-group button:active {
+  transform: scale(0.95); /* Clicks feel more responsive */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.btn-del:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+.file-link {
+  text-decoration: none; /* Removes underline from name */
+  color: inherit;
+  display: block;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.image-container {
+  overflow: hidden;
+  border-radius: 4px;
+  height: 150px; /* Fixed height for gallery look */
 }
 
-.App-link {
-  color: #61dafb;
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Prevents image stretching */
+  transition: transform 0.3s ease;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.file-link:hover img {
+  transform: scale(1.1); /* Slight zoom on hover */
+}
+
+.file-name:hover {
+  color: #007bff; /* Name turns blue on hover */
 }
