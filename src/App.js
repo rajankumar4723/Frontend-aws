@@ -1,4 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import {
+  FaFilePdf,
+  FaFileWord,
+  FaFileArchive,
+  FaFileImage,
+  FaFileAlt,
+} from "react-icons/fa";
+
 import axios from "axios";
 import "./App.css";
 
@@ -6,6 +16,7 @@ function App() {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  // const [message, setMessage] = useState("");
 
   // Get Backend URL from .env
   const API_URL = process.env.REACT_APP_API_URL;
@@ -16,7 +27,7 @@ function App() {
       const response = await axios.get(`${API_URL}/files`);
       setFiles(response.data);
     } catch (error) {
-      console.error("Error fetching files:", error);
+      toast.error("Error fetching files:", error);
     }
   };
 
@@ -26,7 +37,10 @@ function App() {
 
   // 2. Upload File (POST)
   const handleUpload = async () => {
-    if (!selectedFile) return alert("Please select a file!");
+    if (!selectedFile) {
+      toast.warning("Please select a file!");
+      return;
+    }
 
     setUploading(true);
     const formData = new FormData();
@@ -34,15 +48,16 @@ function App() {
 
     try {
       await axios.post(`${API_URL}/upload`, formData);
-      alert("Uploaded to S3!");
+      toast.success("Uploaded to S3 Successfully!");
       setSelectedFile(null);
-      fetchFiles(); // Refresh the list
+      fetchFiles();
     } catch (error) {
-      alert("Upload failed!");
+      toast.error("Upload failed!");
     } finally {
       setUploading(false);
     }
   };
+
   const handleDelete = async (fileKey) => {
     if (window.confirm("Delete this file permanently?")) {
       try {
@@ -50,48 +65,56 @@ function App() {
           data: { key: fileKey }, // This matches const { key } = req.body
         });
 
-        alert("Deleted successfully!");
+        toast.success("Deleted successfully!");
         fetchFiles(); // Refresh your gallery
       } catch (err) {
         console.error("Delete Error:", err);
-        alert("Could not delete file.");
+        toast.error("Could not delete file.");
       }
     }
   };
+  const getFilePreview = (file) => {
+    const ext = file.name.split(".").pop().toLowerCase();
+
+    if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) {
+      return <img src={file.viewUrl} alt="preview" />;
+    }
+
+    if (ext === "pdf") return <FaFilePdf size={120} color="red" />;
+    if (ext === "doc" || ext === "docx")
+      return <FaFileWord size={60} color="blue" />;
+    if (ext === "zip" || ext === "rar")
+      return <FaFileArchive size={60} color="orange" />;
+
+    return <FaFileAlt size={90} color="gray" />;
+  };
+
   // const handleDownload = async (url, fileName) => {
   //   try {
   //     const response = await fetch(url);
   //     const blob = await response.blob();
   //     const blobUrl = window.URL.createObjectURL(blob);
 
-  //     const link = document.createElement('a');
+  //     const link = document.createElement("a");
   //     link.href = blobUrl;
-  //     link.download = fileName || 'download';
+  //     // Remove the 'uploads/' prefix from the filename for a cleaner look
+  //     link.download = fileName.replace("uploads/", "") || "file";
   //     document.body.appendChild(link);
   //     link.click();
   //     document.body.removeChild(link);
+  //     window.URL.revokeObjectURL(blobUrl); // Clean up memory
   //   } catch (err) {
-  //     console.error("Download failed", err);
+  //     toast.error("Download failed. This link  expired.");
   //   }
   // };
-  const handleDownload = async (url, fileName) => {
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      // Remove the 'uploads/' prefix from the filename for a cleaner look
-      link.download = fileName.replace("uploads/", "") || "file";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl); // Clean up memory
-    } catch (err) {
-      alert("Download failed. The link may have expired.");
+  const handleOpen = (url) => {
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else {
+      toast.error("File link is missing or expired.");
     }
   };
+
   const getCleanName = (fullName) => {
     // 1. Removes the folder path (e.g., "uploads/")
     const fileName = fullName.split("/").pop();
@@ -105,6 +128,15 @@ function App() {
       <header className="App-header">
         <h1>AWS S3 Cloud Gallery</h1>
 
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          closeOnClick
+          pauseOnHover
+          draggable
+        />
+
         <div className="upload-section">
           <input
             type="file"
@@ -116,28 +148,45 @@ function App() {
         </div>
 
         <div className="gallery">
-          {files.map((file, index) => (
-            <div key={index} className="file-card">
-             <a href={file.viewUrl} target="_blank" rel="noopener noreferrer" className="file-link">
-          <div className="image-container">
-             <img src={file.viewUrl} alt="PDF" />
-          </div>
-          {/* <p className="file-name">{cleanName}</p> */}
-        </a>
-              <div className="button-group">
-                <button onClick={() => handleDownload(file.viewUrl, file.name)}>
-                  Download
-                </button>
+          {files.map((file, index) => {
+            // 1. Get the clean name using your function
+            const cleanName = getCleanName(file.name);
 
-                <button
-                  onClick={() => handleDelete(file.name)}
-                  style={{ backgroundColor: "red", color: "white" }}
+            return (
+              <div key={index} className="file-card">
+                <a
+                  href={file.viewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="file-link"
                 >
-                  Delete
-                </button>
+                  <div className="image-container">{getFilePreview(file)}</div>
+
+                  {/* 2. Show the clean name under the preview */}
+                  <p className="file-name" title={cleanName}>
+                    {cleanName}
+                  </p>
+                </a>
+
+                <div className="button-group">
+                  {/* 3. Use cleanName here so the downloaded file has a nice name */}
+                  <button
+                    onClick={() => handleOpen(file.viewUrl)}
+                    className="btn-open"
+                  >
+                    Open
+                  </button>
+
+                  <button
+                    className="btn-delete"
+                    onClick={() => handleDelete(file.name)} // Still uses file.name for AWS
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </header>
     </div>

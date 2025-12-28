@@ -1,45 +1,148 @@
-.App-header { padding: 20px; text-align: center; background-color: #282c34; color: white; min-height: 100vh; }
-.upload-section { margin-bottom: 30px; padding: 20px; border: 1px dashed #61dafb; }
-.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 20px; }
-.file-card { background: white; color: black; padding: 10px; border-radius: 8px; }
-.file-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 4px; }
-button { padding: 10px 20px; cursor: pointer; background: #61dafb; border: none; font-weight: bold; }
-.button-group button {
-  transition: transform 0.1s ease;
-  cursor: pointer;
+/* App layout */
+.App-header {
+  padding: 16px;
+  text-align: center;
+  background-color: #282c34;
+  color: white;
+  min-height: 100vh;
 }
 
-.button-group button:active {
-  transform: scale(0.95); /* Clicks feel more responsive */
+/* Upload section */
+.upload-section {
+  margin: 20px auto;
+  padding: 16px;
+  border: 1px dashed #61dafb;
+  max-width: 500px;
+  border-radius: 8px;
 }
 
-.btn-del:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-.file-link {
-  text-decoration: none; /* Removes underline from name */
-  color: inherit;
-  display: block;
+.upload-section input {
+  margin-bottom: 10px;
 }
 
+.file-name {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  /* These lines handle very long names by adding '...' */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px; 
+  padding: 0 5px;
+}
+a{
+  text-decoration: none;
+}
+.file-card:hover .file-name {
+  color: #007bff; /* Highlight name on hover */
+}
+/* Gallery grid */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+/* File card */
+.file-card {
+  background: white;
+  color: black;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.file-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Image */
 .image-container {
   overflow: hidden;
-  border-radius: 4px;
-  height: 150px; /* Fixed height for gallery look */
+  border-radius: 6px;
+  height: 160px;
 }
 
 .image-container img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Prevents image stretching */
-  transition: transform 0.3s ease;
+  object-fit: cover;
+  transition: transform 0.35s ease;
 }
 
 .file-link:hover img {
-  transform: scale(1.1); /* Slight zoom on hover */
+  transform: scale(1.08);
 }
 
-.file-name:hover {
-  color: #007bff; /* Name turns blue on hover */
+/* Buttons */
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
 }
+
+button {
+  flex: 1;
+  padding: 8px 12px;
+  cursor: pointer;
+  background: #61dafb;
+  border: none;
+  font-weight: bold;
+  border-radius: 6px;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+button:hover {
+  background: #4fc3f7;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Delete button */
+.btn-delete {
+  background: #e53935;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #d32f2f;
+}
+.btn-open {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.btn-open:hover {
+  background-color: #0056b3;
+}
+
+/* Mobile tweaks */
+@media (max-width: 480px) {
+  .upload-section {
+    width: 100%;
+  }
+
+  .image-container {
+    height: 140px;
+  }
+}
+
