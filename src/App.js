@@ -58,11 +58,11 @@ function App() {
     }
   };
 
-  const handleDelete = async (fileKey) => {
+  const handleDelete = async (s3Key) => {
     if (window.confirm("Delete this file permanently?")) {
       try {
         await axios.delete(`${API_URL}/delete`, {
-          data: { key: fileKey }, // This matches const { key } = req.body
+          data: { key: s3Key }, // This matches const { key } = req.body
         });
 
         toast.success("Deleted successfully!");
@@ -73,40 +73,7 @@ function App() {
       }
     }
   };
-  const getFilePreview = (file) => {
-    const ext = file.name.split(".").pop().toLowerCase();
 
-    if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) {
-      return <img src={file.viewUrl} alt="preview" />;
-    }
-
-    if (ext === "pdf") return <FaFilePdf size={120} color="red" />;
-    if (ext === "doc" || ext === "docx")
-      return <FaFileWord size={60} color="blue" />;
-    if (ext === "zip" || ext === "rar")
-      return <FaFileArchive size={60} color="orange" />;
-
-    return <FaFileAlt size={90} color="gray" />;
-  };
-
-  // const handleDownload = async (url, fileName) => {
-  //   try {
-  //     const response = await fetch(url);
-  //     const blob = await response.blob();
-  //     const blobUrl = window.URL.createObjectURL(blob);
-
-  //     const link = document.createElement("a");
-  //     link.href = blobUrl;
-  //     // Remove the 'uploads/' prefix from the filename for a cleaner look
-  //     link.download = fileName.replace("uploads/", "") || "file";
-  //     document.body.appendChild(link);
-  //     link.click();
-  //     document.body.removeChild(link);
-  //     window.URL.revokeObjectURL(blobUrl); // Clean up memory
-  //   } catch (err) {
-  //     toast.error("Download failed. This link  expired.");
-  //   }
-  // };
   const handleOpen = (url) => {
     if (url) {
       window.open(url, "_blank", "noopener,noreferrer");
@@ -115,14 +82,30 @@ function App() {
     }
   };
 
-  const getCleanName = (fullName) => {
-    // 1. Removes the folder path (e.g., "uploads/")
-    const fileName = fullName.split("/").pop();
+ // Clean name safely
+const getCleanName = (fullName) => {
+  if (!fullName) return "Unknown-file"; // fallback for undefined
+  const fileName = fullName.split("/").pop();
+  const dashIndex = fileName.indexOf("-");
+  return dashIndex >= 0 ? fileName.substring(dashIndex + 1) : fileName;
+};
 
-    // 2. Removes the ID/Timestamp (e.g., "3432423-")
-    // It finds the first dash and takes everything after it
-    return fileName.substring(fileName.indexOf("-") + 1);
-  };
+// File preview safely
+const getFilePreview = (file) => {
+  const name = file.name || file.originalName || "unknown-file";
+  const ext = name.split(".").pop().toLowerCase();
+
+  if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) {
+    return <img src={file.viewUrl} alt="preview" />;
+  }
+
+  if (ext === "pdf") return <FaFilePdf size={120} color="red" />;
+  if (ext === "doc" || ext === "docx") return <FaFileWord size={60} color="blue" />;
+  if (ext === "zip" || ext === "rar") return <FaFileArchive size={60} color="orange" />;
+
+  return <FaFileAlt size={90} color="gray" />;
+};
+
   return (
     <div className="App">
       <header className="App-header">
@@ -150,7 +133,7 @@ function App() {
         <div className="gallery">
           {files.map((file, index) => {
             // 1. Get the clean name using your function
-            const cleanName = getCleanName(file.name);
+            const cleanName = getCleanName(file.name || file.s3Key || file.key);
 
             return (
               <div key={index} className="file-card">
@@ -179,7 +162,7 @@ function App() {
 
                   <button
                     className="btn-delete"
-                    onClick={() => handleDelete(file.name)} // Still uses file.name for AWS
+                    onClick={() => handleDelete(file.s3Key)} // Still uses file.name for AWS
                   >
                     Delete
                   </button>
